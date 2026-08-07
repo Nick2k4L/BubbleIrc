@@ -27,15 +27,15 @@ func CreateNewRoundedBoxStyle(boxOptions BoxOptions) lipgloss.Style {
 
 	// we check if any of these options are set, if they are not move on
 	if len(boxOptions.Padding) > 0 {
-		boxStyle.Padding(boxOptions.Padding...)
+		boxStyle = boxStyle.Padding(boxOptions.Padding...)
 	}
 
 	if boxOptions.Width > 0 {
-		boxStyle.Width(boxOptions.Width)
+		boxStyle = boxStyle.Width(boxOptions.Width)
 	}
 
 	if boxOptions.Height > 0 {
-		boxStyle.Height(boxOptions.Height)
+		boxStyle = boxStyle.Height(boxOptions.Height)
 	}
 
 	return boxStyle
