@@ -1,17 +1,16 @@
 package components
 
 import (
-	"image/color"
-
 	"charm.land/lipgloss/v2"
+	"github.com/Nick2k4L/BubbleIrc/theme"
 	"github.com/charmbracelet/x/exp/charmtone"
 )
 
 // CreatePopUpBox creates out popbox, so we need to take in
 // 1. whatever the screen is currently displaying
 // 2. whatever we want in the content, for example
-func CreatePopUpBox(mainAppContent string, popupContent string) string {
-	popup := lipgloss.NewLayer(box(popupContent))
+func CreatePopUpBox(mainAppContent string, popupContent string, theme theme.Theme) string {
+	popup := lipgloss.NewLayer(box(popupContent, theme))
 
 	// Use the actual app UI as the base layer so the canvas matches the terminal size
 	baseLayer := lipgloss.NewLayer(mainAppContent).AddLayers(
@@ -22,7 +21,7 @@ func CreatePopUpBox(mainAppContent string, popupContent string) string {
 	return comp.Render()
 }
 
-func box(content string) string {
+func box(content string, theme theme.Theme) string {
 	return lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForegroundBlend(
@@ -31,7 +30,7 @@ func box(content string) string {
 			charmtone.Guac,
 			charmtone.Charple,
 			charmtone.Sriracha,
-		).Background(color.White).BorderBackground(color.White).
+		).Background(lipgloss.Color(theme.BackgroundColor)).BorderBackground(lipgloss.Color(theme.BackgroundColor)).
 		Height(20).
 		Width(60).
 		AlignHorizontal(lipgloss.Center).
