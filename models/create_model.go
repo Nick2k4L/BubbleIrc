@@ -8,15 +8,14 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/Nick2k4L/BubbleIrc/components"
+	"github.com/Nick2k4L/BubbleIrc/theme"
 )
 
 var (
-	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	blurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
-	cursorStyle  = focusedStyle
-
-	focusedButton = focusedStyle.Render("[ Create Server ]")
-	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Create Server"))
+// focusedStyle = lipgloss.NewStyle().Foreground(color.Black)
+// blurredStyle = lipgloss.NewStyle().Foreground(color.White)
+// focusedButton = focusedStyle.Render("[ Create Server ]")
+// blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render("Create Server"))
 )
 
 type (
@@ -38,26 +37,43 @@ const (
 type CreateModel struct {
 	index  creationState
 	inputs []textinput.Model
-
-	// this will contain all of our IRC creation logic
+	theme  theme.Theme
+	// this will contain all of our IRC creation logic --Reroute somwhere
 }
 
-func InitCreateModel() *CreateModel {
+// want to make this a pop up instead
+// when click ctrl+a we should see a popup window
+func InitCreateModel(theme theme.Theme) *CreateModel {
 	m := &CreateModel{
 		inputs: make([]textinput.Model, 4),
+		theme:  theme,
 	}
 
 	var t textinput.Model
 	for i := range m.inputs {
 		t = textinput.New()
+
 		s := t.Styles()
 		t.SetWidth(20)
 		t.CharLimit = 32
-		s.Focused.Prompt = focusedStyle
-		s.Focused.Text = focusedStyle
-		s.Blurred.Prompt = blurredStyle
-		s.Focused.Text = focusedStyle
-		s.Focused.Prompt = focusedStyle
+
+		// Prompt color i.e background 'char' of character we end up choosing
+		s.Focused.Prompt = lipgloss.NewStyle().Foreground((lipgloss.Color(theme.FocusedStyle))).Background(lipgloss.Color(theme.BackgroundColor))
+		s.Blurred.Prompt = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.UnFocusedStyle)).Background(lipgloss.Color(theme.BackgroundColor))
+
+		// Text colors
+		s.Focused.Text = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.FocusedStyle)).Background(lipgloss.Color(theme.BackgroundColor))
+		s.Blurred.Text = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.UnFocusedStyle)).Background(lipgloss.Color(theme.BackgroundColor))
+
+		// Color for blinking cursor
+		s.Cursor.Color = lipgloss.Color(theme.UnFocusedStyle)
+
+		// background color for placeholder
+		s.Focused.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.UnFocusedStyle)).Background(lipgloss.Color(theme.BackgroundColor))
+		s.Blurred.Placeholder = lipgloss.NewStyle().Foreground(lipgloss.Color(theme.UnFocusedStyle)).Background(lipgloss.Color(theme.BackgroundColor))
+
+		t.Prompt = "* " // Can use this to create custom prompt '>' indicators later...
+
 		t.SetStyles(s)
 
 		switch i {
@@ -70,7 +86,7 @@ func InitCreateModel() *CreateModel {
 			t.Placeholder = "bubbleChat"
 		case int(channelInput):
 			t.SetWidth(35)
-			t.Placeholder = "#lobby, #trivia (comma separated)"
+			t.Placeholder = "#lobby, #trivia"
 		}
 		m.inputs[i] = t
 
@@ -157,27 +173,39 @@ func createHeaderText(i int) string {
 	return ""
 }
 
+// View model for the create, everything
 func (m *CreateModel) View() string {
 	var b strings.Builder
+
+	// Subbox we are wrapping it in
 	settingsBoxOptions := components.BoxOptions{
-		Color:   components.Orange,
-		Height:  10,
-		Width:   10,
-		Padding: []int{0, 0},
+		Width:    30,
+		IsSubBox: true,
 	}
+
 	for i := range m.inputs {
 		b.WriteString(createHeaderText(i))
-		b.WriteString(components.CreateNewRoundedBoxStyle(settingsBoxOptions).Render(m.inputs[i].View()))
+		b.WriteString(components.CreateNewRoundedBoxStyle(m.inputs[i].View(), settingsBoxOptions, m.theme))
 		if i < len(m.inputs)-1 {
 			b.WriteRune('\n')
 		}
 	}
 
-	button := &blurredButton
+	button := buttonCreation("Create Server", m.theme, false)
 	if int(m.index) == len(m.inputs) {
-		button = &focusedButton
+		button = buttonCreation("---> Create Server <---", m.theme, true)
 	}
-	fmt.Fprintf(&b, "\n\n%s\n\n", *button)
+	fmt.Fprintf(&b, "\n\n%s\n\n", button)
 
 	return b.String()
+}
+
+// decided to take this out into its own function from the tutorial
+func buttonCreation(text string, theme theme.Theme, focused bool) string {
+	if focused {
+		return lipgloss.NewStyle().Foreground(lipgloss.Color(theme.FocusedStyle)).Render(text)
+	}
+	x := lipgloss.NewStyle().Foreground(lipgloss.Color(theme.UnFocusedStyle)).Render(text)
+	// return fmt.Sprintf("[ %s ]", lipgloss.NewStyle().Foreground(lipgloss.Color(theme.UnFocusedStyle)).Render(text))
+	return x
 }
