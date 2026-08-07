@@ -17,7 +17,7 @@ type SettingsModel struct {
 func InitSettingsModel() *SettingsModel {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#FAFAFA"))
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#000000"))
 	return &SettingsModel{
 		text:    "In settings model",
 		visited: 0,
