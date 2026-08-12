@@ -6,6 +6,8 @@ import (
 	"github.com/charmbracelet/x/exp/charmtone"
 )
 
+// REFACTOR THIS -- THIS IS BAD AS WELL....
+
 type Box struct {
 	Width                int
 	Height               int
